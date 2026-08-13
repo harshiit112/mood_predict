@@ -1,170 +1,173 @@
-# Emotion Engine 🧠✨ — Read the Room
+# 🧠 Emotion Engine — Deep Learning NLP Classifier
 
-Emotion Engine is a full-stack, deep learning-powered Natural Language Processing (NLP) web application that detects and analyzes human emotions from text in real time. The project combines an advanced **Bidirectional GRU (BiGRU)** neural network built with TensorFlow/Keras with a high-performance **FastAPI** backend and a premium, mood-adaptive frontend interface.
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688.svg?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.15%2B-FF6F00.svg?style=for-the-badge&logo=tensorflow&logoColor=white)](https://www.tensorflow.org)
+[![Keras](https://img.shields.io/badge/Keras-FF0000.svg?style=for-the-badge&logo=keras&logoColor=white)](https://keras.io)
+[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Datasets-yellow.svg?style=for-the-badge)](https://huggingface.co)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+
+An end-to-end Natural Language Processing (NLP) classification system that analyzes textual input to detect emotional state. The engine is trained on a custom **Bidirectional GRU (BiGRU)** neural network, served using **FastAPI**'s high-speed async endpoints, and presents predictions in a **modern, dynamic, mood-reactive web application**.
 
 ---
 
 ## 🚀 Key Features
 
-* **Advanced Deep Learning Backend:** Powered by a Bidirectional GRU model trained on the Hugging Face `dair-ai/emotion` dataset, achieving **~88.3% test accuracy** across six primary emotions: *sadness* 😢, *joy* 😄, *love* ❤️, *anger* 😠, *fear* 😨, and *surprise* 😲.
-* **High-Performance Web API:** Built using FastAPI, featuring asynchronous server lifecycle management (model/tokenizer pre-loading) and automatic request data validation via Pydantic.
-* **Mood-Adaptive UI:** A premium, dark-themed Single Page Application (SPA) with a faint instrument-panel grain and glassmorphic panels. The radial background gradients and accent colors dynamically shift in real-time depending on the predicted mood of the text.
-* **Interactive Probability Dashboard:** Visualizes prediction confidence levels for all six emotions using animated progress bars.
-* **Robust Preprocessing Pipeline:** Integrated text cleaning, regex filtering, tokenization, and post-padding to ensure accurate model inference.
+*   **Deep Learning NLP Engine**: Multi-class emotion classifier detecting 6 primary emotions: `joy` 😄, `sadness` 😢, `anger` 😠, `fear` 😨, `love` ❤️, and `surprise` 😲.
+*   **Production-Ready Web Service**: FastAPI server with async startup lifespan hooks to load models, request/response validation via Pydantic, and cross-origin (CORS) enablement.
+*   **Dynamic CSS UI**: High-fidelity frontend design featuring ambient blur glowing effects and background radial gradients that dynamically shift theme colors based on the detected emotion.
+*   **Advanced Model Optimization**: Combines deep embeddings, bidirectional sequence analysis, regularized dropout layers, and validation-loss early stopping. Uses custom class weighting to resolve dataset imbalances.
+*   **Comprehensive Benchmark Suite**: Detailed comparisons between SimpleRNN, LSTM, GRU, and Bidirectional GRU.
 
 ---
 
-## 🛠️ Tech Stack
+## 🧠 Model Architecture & Training Journey
 
-* **Deep Learning & ML:** TensorFlow, Keras, NumPy, Pandas, Scikit-Learn, Pickle
-* **Backend API:** FastAPI, Uvicorn, Pydantic
-* **Frontend UI:** Vanilla HTML5, Vanilla CSS3 (Custom Properties, Keyframes, Glassmorphism), Modern JavaScript (Fetch API, DOM)
-* **Dataset:** Hugging Face `dair-ai/emotion`
+The modeling workflow is documented step-by-step in the Jupyter Notebook [`nlp_model_new.ipynb`](file:///c:/Users/hv702/Downloads/dlproject/nlp_model_new.ipynb).
+
+### 1. Dataset & Preprocessing
+*   **Data Source**: Hugging Face's `dair-ai/emotion` dataset (16,000 training, 2,000 validation, 2,000 test examples).
+*   **Tokenizer**: Custom-fit Keras `Tokenizer` with a `10,000` word vocabulary cap and out-of-vocabulary (`<unk>`) token tracking.
+*   **Sequence Preparation**: Sequences are post-padded and truncated to a strict `50` token limit.
+*   **Imbalance Correction**: Leveraged Scikit-Learn `compute_class_weight` to calculate class weights for the loss function, ensuring minority emotions (like `surprise` and `love`) are predicted accurately.
+
+### 2. Network Topology (Bidirectional GRU)
+The architecture chosen for deployment leverages Bidirectional layers to capture sequence patterns from left-to-right and right-to-left:
+
+```mermaid
+graph TD
+    A[Text Input: max_length=50] --> B[Embedding Layer: Vocab=10k, Output Dim=300]
+    B --> C[Bidirectional GRU: Units=128, return_sequences=True]
+    C --> D[Dropout: rate=0.5]
+    D --> E[Bidirectional GRU: Units=64, return_sequences=False]
+    E --> F[Dropout: rate=0.5]
+    F --> G[Dense Output Layer: 6 Neurons, Softmax Activation]
+    G --> H[Predictive Distribution]
+```
 
 ---
 
-## 📁 Repository Structure
+## 📈 Performance Benchmark
+
+We evaluated multiple sequence networks. While vanilla recurrent cells struggled to generalize due to vanishing gradients, the **Advanced Bidirectional GRU** model demonstrated stellar accuracy:
+
+| Architecture | Test Accuracy | Test Loss | Key Characteristics |
+| :--- | :---: | :---: | :--- |
+| **SimpleRNN** | 10.40% | 1.8512 | Underfitted vanilla recurrent cell; suffers from vanishing gradients. |
+| **LSTM** | 5.15% | 1.8126 | Dual state memory gates, slow convergence under small batch runs. |
+| **GRU** | 4.35% | 1.7891 | Gated Recurrent Unit, struggled to learn features under high dropout. |
+| **BiGRU (Deployed)** | **88.35%** | **0.3570** | **Bidirectional recurrent memory, Adam optimization, custom embeddings (dim=300).** |
+
+> [!TIP]
+> The bidirectional structure captures context in both directions, making it exceptionally good at detecting sentiment shifts (e.g., *"I was happy until..."*) which unidirectional models often miss.
+
+---
+
+## 🎨 Mood-Reactive UI (Frontend)
+
+The frontend, located in [`static/index.html`](file:///c:/Users/hv702/Downloads/dlproject/static/index.html), is styled with modern design tokens:
+
+*   **Glassmorphic Accents**: Translucent panel backdrops using custom grain micro-noise filters.
+*   **Theme Fluidity**: Dynamic JS changing the CSS global variables `--mood` and `--mood-soft` dynamically on predictive callback.
+*   **Color Mapping System**:
+    *   😢 **Sadness**: Cool Blue (`#4f7fc4`)
+    *   😄 **Joy**: Sun Gold (`#f2b93d`)
+    *   ❤️ **Love**: Rose Pink (`#e8637f`)
+    *   😠 **Anger**: Deep Coral (`#dd4f4f`)
+    *   😨 **Fear**: Royal Violet (`#8a6bd1`)
+    *   😲 **Surprise**: Sunset Orange (`#ef9548`)
+
+---
+
+## 🔌 Backend API Specs
+
+The API is defined in [`main.py`](file:///c:/Users/hv702/Downloads/dlproject/main.py) and is fully async.
+
+### Health Check
+*   **Endpoint**: `GET /health`
+*   **Response**:
+    ```json
+    {
+      "status": "Server is running",
+      "model_loaded": true
+    }
+    ```
+
+### Predict Emotion
+*   **Endpoint**: `POST /predict`
+*   **Request Body**:
+    ```json
+    {
+      "text": "I feel so happy and excited about starting this new project!"
+    }
+    ```
+*   **Response Body**:
+    ```json
+    {
+      "text": "I feel so happy and excited about starting this new project!",
+      "predicted_emotion": "joy",
+      "confidence": 0.9845,
+      "all_probabilites": {
+        "sadness": 0.0012,
+        "joy": 0.9845,
+        "love": 0.0089,
+        "anger": 0.0031,
+        "fear": 0.0015,
+        "surprise": 0.0008
+      }
+    }
+    ```
+
+---
+
+## 📁 Directory Structure
 
 ```text
-├── Artifacts/                  # Serialized model & preprocessing assets
-│   ├── BiGRU_Model.keras       # Trained Bidirectional GRU model
-│   └── tokenizer.pkl           # Saved Keras Tokenizer
-├── static/                     # Frontend Single Page Application
-│   └── index.html              # Sleek, mood-adaptive interface
-├── main.py                     # FastAPI web server and API endpoints
-├── nlp_model_new.ipynb         # Jupyter Notebook detailing model training
-├── requirements.txt            # Python dependencies
-└── README.md                   # Project documentation
+├── Artifacts/
+│   ├── BiGRU_Model.keras    # Deployed Keras deep learning model (41MB)
+│   └── tokenizer.pkl        # Pickled Keras sequence tokenizer (607KB)
+├── static/
+│   └── index.html           # Beautiful, dynamic glassmorphic HTML/CSS/JS frontend
+├── main.py                  # FastAPI server with model hosting & inference logic
+├── nlp_model_new.ipynb      # Jupyter Notebook for model training & evaluation
+├── requirements.txt         # Project package dependencies
+└── runtime.txt              # Specifies target python environment
 ```
 
 ---
 
-## 📊 Model Training & Evaluation
+## 🛠️ Local Setup & Installation
 
-The training process is fully detailed in [`nlp_model_new.ipynb`](./nlp_model_new.ipynb). During development, multiple recurrent neural network architectures were evaluated on the `emotion` dataset (16,000 training, 2,000 validation, and 2,000 test examples):
+### Prerequisites
+*   Python 3.10 or higher
+*   Pip package manager
 
-### Model Comparison & Results
-
-| Model Architecture | Loss | Test Accuracy |
-| :--- | :---: | :---: |
-| Simple Recurrent Neural Network (RNN) | 1.8512 | 10.40% |
-| Long Short-Term Memory (LSTM) | 1.8126 | 5.15% |
-| Gated Recurrent Unit (GRU) | 1.7891 | 4.35% |
-| **Advanced Bidirectional GRU (BiGRU)** | **0.3570** | **88.35%** |
-
-*Note: The baseline RNN, LSTM, and GRU models were simple configurations; adding bidirectional tracking, larger hidden states, and dropout regularization in the BiGRU model drastically increased accuracy and generalization.*
-
-### BiGRU Architecture Specs
-
-```python
-BiGRU = Sequential([
-    Embedding(input_dim=max_words, output_dim=300, input_length=50),
-    Bidirectional(GRU(units=128, return_sequences=True)),
-    Dropout(0.5),
-    Bidirectional(GRU(units=64)),
-    Dropout(0.5),
-    Dense(units=num_classes, activation='softmax')
-])
-```
-
----
-
-## ⚙️ Installation & Setup
-
-Follow these steps to run the FastAPI server and UI locally:
-
-### 1. Clone the Repository
+### 1. Clone & Initialize Environment
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME.git
-cd YOUR_REPOSITORY_NAME
-```
+# Navigate to the workspace
+cd dlproject
 
-### 2. Create and Activate a Virtual Environment
-**On Windows:**
-```bash
+# Create a virtual environment
 python -m venv .venv
+
+# Activate the virtual environment
+# On Windows:
 .venv\Scripts\activate
-```
-**On macOS/Linux:**
-```bash
-python3 -m venv .venv
+# On Linux/macOS:
 source .venv/bin/activate
 ```
 
-### 3. Install Dependencies
+### 2. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Run the FastAPI Server
-Launch the development server using Uvicorn:
+### 3. Start the Server
+Run the FastAPI development server with reload enabled:
 ```bash
-uvicorn main:app --reload
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
-The server will start running at `http://127.0.0.1:8000/`.
+Open your browser and navigate to [http://127.0.0.1:8000](http://127.0.0.1:8000) to interact with the web interface.
 
----
-
-## 🔌 API Endpoints
-
-Once the server is running, you can explore the API using the interactive Swagger documentation at `http://127.0.0.1:8000/docs`.
-
-### 1. Root / UI Endpoint
-* **Route:** `GET /`
-* **Description:** Serves the frontend single-page application (`static/index.html`).
-
-### 2. Health Check
-* **Route:** `GET /health`
-* **Response Example:**
-  ```json
-  {
-    "status": "Server is running",
-    "model_loaded": true
-  }
-  ```
-
-### 3. Prediction Endpoint
-* **Route:** `POST /predict`
-* **Request Schema:**
-  ```json
-  {
-    "text": "I feel so happy and excited today!"
-  }
-  ```
-* **Response Schema:**
-  ```json
-  {
-    "text": "I feel so happy and excited today!",
-    "predicted_emotion": "joy",
-    "confidence": 0.9842,
-    "all_probabilites": {
-      "sadness": 0.0015,
-      "joy": 0.9842,
-      "love": 0.0083,
-      "anger": 0.0021,
-      "fear": 0.0011,
-      "surprise": 0.0028
-    }
-  }
-  ```
-
----
-
-## 🎨 Frontend UI Aesthetics
-
-The frontend interface features a state-of-the-art layout:
-* **Glassmorphic Console:** Input text area is encased in a frosted-glass panel that blurs background elements.
-* **Ambient Lighting:** Glow effects and radial gradients that automatically sync to the dominant emotion:
-  * 😢 **Sadness:** Cool blue shades
-  * 😄 **Joy:** Sunny yellow accents
-  * ❤️ **Love:** Warm pink/rose hues
-  * 😠 **Anger:** Deep crimson gradients
-  * 😨 **Fear:** Dark purple tones
-  * 😲 **Surprise:** Soft orange/amber glow
-* **Micro-Animations:** Fluid loading indicators and smooth bar-chart expansions built with CSS transitions.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+> [!NOTE]
+> Upon startup, the backend automatically reads the BiGRU model from `Artifacts/` using FastAPI's async lifespan context. No extra model compilation steps are needed.
